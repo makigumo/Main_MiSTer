@@ -34,3 +34,6 @@
 
 // PCECD  support
 #include "support/pcecd/pcecd.h"
+
+// X68000  support
+#include "support/x68000/x68000.h"

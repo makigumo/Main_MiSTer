@@ -281,6 +281,13 @@ char is_st()
 	return (is_st_type == 1);
 }
 
+static int is_x68000_type = 0;
+char is_x68000()
+{
+    if (!is_x68000_type) is_x68000_type = strcasecmp(core_name, "X68000") ? 2 : 1;
+    return (is_x68000_type == 1);
+}
+
 char is_sharpmz()
 {
 	return(core_type == CORE_TYPE_SHARPMZ);
@@ -311,6 +318,7 @@ void user_io_read_core_name()
 	is_archie_type = 0;
 	is_gba_type = 0;
 	is_c64_type = 0;
+	is_x68000_type = 0;
 	is_st_type = 0;
 	core_name[0] = 0;
 
@@ -1530,7 +1538,6 @@ int user_io_file_mount(const char *name, unsigned char index, char pre)
 		{
 			ret = dsk2nib(name, sd_image + index);
 		}
-
 		if (!ret)
 		{
 			if (x2trd_ext_supp(name))
@@ -1542,11 +1549,18 @@ int user_io_file_mount(const char *name, unsigned char index, char pre)
 				writable = 0;
 				ret = c64_openT64(name, sd_image + index);
 			}
-			else
-			{
-				writable = FileCanWrite(name);
-				ret = FileOpenEx(&sd_image[index], name, writable ? (O_RDWR | O_SYNC) : O_RDONLY);
-			}
+			else if (is_x68000() && len > 4 && strcasecmp(name + len - 4, ".d88") != 0 && strcasecmp(name + len - 4, ".hdf") != 0) {
+                if (!strcasecmp(name + len - 4, ".dim")) {
+                    writable = 0;
+                    ret = x68000_openDIM(name, sd_image + index);
+                } else if (!strcasecmp(name + len - 4, ".xdf")) {
+                    writable = 0;
+                    ret = x68000_open2HDXDF(name, sd_image + index);
+                }
+            } else {
+                writable = FileCanWrite(name);
+                ret = FileOpenEx(&sd_image[index], name, writable ? (O_RDWR | O_SYNC) : O_RDONLY);
+            }
 		}
 
 		if (!ret)

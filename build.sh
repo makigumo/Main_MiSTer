@@ -5,6 +5,7 @@
 HOST=192.168.1.75
 [ -f host ] && HOST=$(cat host)
 
+MISTERPATH="/tmp"
 # make script fail if any command failed,
 # so we don't need to check the exit status of every command.
 set -e
